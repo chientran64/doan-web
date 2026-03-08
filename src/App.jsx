@@ -9,7 +9,7 @@ function App() {
     <Router>
       <FloatingBackground />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Menu />} />
         <Route path="/menu/:tableId" element={<Menu />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>

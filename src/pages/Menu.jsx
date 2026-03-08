@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { formatPrice, categories } from '../data/menu';
 import { ShoppingBag, Plus, X, Search, Clock, ChefHat, CheckCircle, Truck, Users, Copy, Link, MessageCircle, Send } from 'lucide-react';
@@ -8,6 +8,7 @@ import CartSidebar from '../components/CartSidebar';
 export default function Menu() {
     const { tableId } = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isTrackingOpen, setIsTrackingOpen] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -38,7 +39,7 @@ export default function Menu() {
 
     const cartItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-    const displayTable = tableId !== 'Giao Hàng' ? tableId : 'Đơn Giao Hàng';
+    const displayTable = (tableId && tableId !== 'Giao Hàng') ? tableId : 'Đơn Giao Hàng';
 
     const triggerFlyAnimation = (e, image) => {
         if (!e) return;
@@ -166,7 +167,7 @@ export default function Menu() {
             <div className="container">
                 <header className="flex-between" style={{ marginBottom: '2rem', padding: '1rem 0' }}>
                     <div>
-                        <h1 className="title logo-bounce" style={{ marginBottom: '0.2rem' }}>Snacky</h1>
+                        <h1 className="title logo-bounce" style={{ marginBottom: '0.2rem', cursor: 'pointer' }} onDoubleClick={() => navigate('/admin')}>Snacky</h1>
                         <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                             <span>📍 123 Đường Bách Khoa, Hai Bà Trưng, Hà Nội</span>
                             <span>📞 Hotline: 0987.654.321</span>

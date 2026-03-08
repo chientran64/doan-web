@@ -16,6 +16,10 @@ export default function Admin() {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [replyText, setReplyText] = useState('');
 
+    const [showAddMenuModal, setShowAddMenuModal] = useState(false);
+    const [newMenuItem, setNewMenuItem] = useState({ name: '', price: '', category: 'an_vat', description: '', image: '' });
+    const [isUploading, setIsUploading] = useState(false);
+
     const [session, setSession] = useState(null);
     const [authLoading, setAuthLoading] = useState(true);
     const [authEmail, setAuthEmail] = useState('');
@@ -166,26 +170,88 @@ export default function Admin() {
         );
     };
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            // Dùng generic ImgBB API key để demo (bạn cần đổi key này thành key thật, lấy tại https://api.imgbb.com/)
+            const IMGBB_API_KEY = 'a0df545b796ebdbef4dbdfebdca72f6a';
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                setNewMenuItem(prev => ({ ...prev, image: data.data.url }));
+            } else {
+                alert('Tải ảnh thất bại: ' + (data.error?.message || 'Lỗi không rõ'));
+            }
+        } catch (error) {
+            console.error('Lỗi tải ảnh:', error);
+            alert('Có lỗi xảy ra khi tải ảnh lên.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     // Menu Management
     const renderMenuManager = () => {
         return (
             <div className="glass-panel" style={{ padding: '2rem' }}>
                 <div className="flex-between" style={{ marginBottom: '2rem' }}>
                     <h2 style={{ fontSize: '1.5rem', color: 'var(--primary-color)' }}>Quản lý Thực đơn</h2>
-                    <button className="btn btn-primary" onClick={() => {
-                        const name = prompt('Nhập tên món ăn mới:');
-                        if (!name) return;
-                        const price = parseInt(prompt('Nhập giá món ăn (VND):') || '0');
-                        const categoryOpts = categories.map(c => c.id).join(', ');
-                        const category = prompt(`Nhập ID danh mục (${categoryOpts}):`) || 'an_vat';
-                        const description = prompt('Nhập mô tả món (tuỳ chọn):') || '';
-                        const image = prompt('Nhập link hình ảnh (tuỳ chọn):') || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400';
-
-                        addMenuItem({ name, price, category, description, image, options: [], soldOut: false });
-                    }}>
+                    <button className="btn btn-primary" onClick={() => setShowAddMenuModal(true)}>
                         <Plus size={18} /> Thêm món mới
                     </button>
                 </div>
+
+                {showAddMenuModal && (
+                    <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--primary-color)', marginBottom: '2rem' }}>
+                        <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)', fontSize: '1.1rem' }}>Thêm món ăn mới</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 'bold' }}>Tên món</label>
+                                <input type="text" value={newMenuItem.name} onChange={e => setNewMenuItem({ ...newMenuItem, name: e.target.value })} style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="VD: Trà sả tắc..." />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 'bold' }}>Giá (VND)</label>
+                                <input type="number" value={newMenuItem.price} onChange={e => setNewMenuItem({ ...newMenuItem, price: e.target.value })} style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="VD: 25000" />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 'bold' }}>Danh mục</label>
+                                <select value={newMenuItem.category} onChange={e => setNewMenuItem({ ...newMenuItem, category: e.target.value })} style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'white' }}>
+                                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ gridColumn: '1 / -1' }}>
+                                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 'bold' }}>Mô tả thêm</label>
+                                <input type="text" value={newMenuItem.description} onChange={e => setNewMenuItem({ ...newMenuItem, description: e.target.value })} style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="VD: Ngon tuyệt..." />
+                            </div>
+                            <div style={{ gridColumn: '1 / -1' }}>
+                                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: 'bold' }}>Hình ảnh (Tải lên)</label>
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    {newMenuItem.image && <img src={newMenuItem.image} alt="Preview" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />}
+                                    <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} id="upload-image" />
+                                    <label htmlFor="upload-image" className="btn" style={{ padding: '0.6rem 1rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)', cursor: 'pointer' }}>
+                                        {isUploading ? 'Đang tải...' : 'Chọn ảnh tải lên'}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'flex-end' }}>
+                            <button className="btn" style={{ padding: '0.6rem 1.2rem', background: '#e2e8f0', border: 'none' }} onClick={() => setShowAddMenuModal(false)}>Hủy bỏ</button>
+                            <button className="btn btn-primary" style={{ padding: '0.6rem 1.2rem' }} onClick={() => {
+                                if (!newMenuItem.name || !newMenuItem.price) return alert('Vui lòng nhập tên và giá món ăn!');
+                                addMenuItem({ ...newMenuItem, price: parseInt(newMenuItem.price), options: [], soldOut: false, image: newMenuItem.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400' });
+                                setShowAddMenuModal(false);
+                                setNewMenuItem({ name: '', price: '', category: 'an_vat', description: '', image: '' });
+                            }}>Lưu món ăn</button>
+                        </div>
+                    </div>
+                )}
 
                 <div style={{ display: 'grid', gap: '1rem' }}>
                     {menuItems.map(item => (
