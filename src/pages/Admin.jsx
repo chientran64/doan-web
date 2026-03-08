@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { formatPrice, categories } from '../data/menu';
-import { CheckCircle, Clock, ChefHat, AlertCircle, RefreshCw, Trash2, Plus, BarChart2, Store, ListOrdered, Phone, MapPin, Tag, Truck, MessageSquare, Send, User, Dna, Gift } from 'lucide-react';
+import { CheckCircle, Clock, ChefHat, AlertCircle, RefreshCw, Trash2, Plus, BarChart2, Store, ListOrdered, Phone, MapPin, Tag, Truck, MessageSquare, Send, User, Dna, Gift, LogOut } from 'lucide-react';
+import { supabase } from '../supabase';
 
 export default function Admin() {
     const {
@@ -14,6 +15,41 @@ export default function Admin() {
     const [activeTab, setActiveTab] = useState('orders'); // orders, menu, vouchers, reports, chat
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [replyText, setReplyText] = useState('');
+
+    const [session, setSession] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
+    const [authEmail, setAuthEmail] = useState('');
+    const [authPassword, setAuthPassword] = useState('');
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [authError, setAuthError] = useState('');
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setAuthLoading(false);
+        });
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const handleAuth = async (e) => {
+        e.preventDefault();
+        setAuthLoading(true);
+        setAuthError('');
+        const { error } = isSignUp
+            ? await supabase.auth.signUp({ email: authEmail, password: authPassword })
+            : await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+
+        if (error) setAuthError(error.message);
+        else if (isSignUp) setAuthError('Đăng nhập hoặc kiểm tra hòm thư email để xác nhận (nếu có yêu cầu).');
+        setAuthLoading(false);
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -606,6 +642,84 @@ export default function Admin() {
 
     const pendingCount = orders.filter(o => o.status === 'pending').length;
 
+    if (authLoading) {
+        return <div style={{ padding: '4rem', textAlign: 'center', fontSize: '1.2rem', color: 'var(--text-muted)' }}>Đang kiểm tra đăng nhập...</div>;
+    }
+
+    if (!session) {
+        return (
+            <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '1rem' }}>
+                <div style={{ width: '100%', maxWidth: '400px', background: 'white', padding: '2.5rem', borderRadius: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <div style={{ width: '3rem', height: '3rem', background: 'rgba(255, 152, 0, 0.1)', color: 'var(--primary-color)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                            <User size={24} />
+                        </div>
+                        <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+                            {isSignUp ? 'Đăng Ký Admin' : 'Admin Login'}
+                        </h2>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            {isSignUp ? 'Tạo tài khoản quản trị viên mới' : 'Vui lòng đăng nhập để truy cập quản lý'}
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div>
+                            <input
+                                type="email"
+                                placeholder="Email của bạn"
+                                value={authEmail}
+                                onChange={e => setAuthEmail(e.target.value)}
+                                style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', outline: 'none' }}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <input
+                                type="password"
+                                placeholder="Mật khẩu"
+                                value={authPassword}
+                                onChange={e => setAuthPassword(e.target.value)}
+                                style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', outline: 'none' }}
+                                required
+                                minLength={6}
+                            />
+                        </div>
+
+                        {authError && (
+                            <div style={{
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                fontSize: '0.85rem',
+                                background: authError.includes('thành công') || authError.includes('hòm thư') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                color: authError.includes('thành công') || authError.includes('hòm thư') ? 'var(--success)' : 'var(--danger)'
+                            }}>
+                                {authError}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ padding: '0.8rem', width: '100%', marginTop: '0.5rem', opacity: authLoading ? 0.7 : 1 }}
+                            disabled={authLoading}
+                        >
+                            {authLoading ? 'Đang xử lý...' : (isSignUp ? 'Tạo tài khoản' : 'Đăng nhập')}
+                        </button>
+                    </form>
+
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
+                        <span
+                            style={{ cursor: 'pointer', color: 'var(--primary-color)', fontWeight: '500' }}
+                            onClick={() => { setIsSignUp(!isSignUp); setAuthError(''); }}
+                        >
+                            {isSignUp ? 'Đã có tài khoản? Đăng nhập ngay' : 'Tạo tài khoản admin mới'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container" style={{ maxWidth: '1400px' }}>
             <header className="flex-between" style={{ marginBottom: '2rem', padding: '1rem 2rem', background: 'var(--surface-color)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
@@ -613,9 +727,14 @@ export default function Admin() {
                     <h1 className="title" style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>Tổng Đài Quản Lý</h1>
                     <p style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Hệ thống quản lý nhà hàng tự động</p>
                 </div>
-                <button className="btn" style={{ border: 'none', background: 'rgba(255, 152, 0, 0.1)', color: 'var(--primary-color)' }} onClick={() => window.location.reload()}>
-                    <RefreshCw size={18} /> Đồng bộ mới
-                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button className="btn" style={{ border: 'none', background: 'rgba(255, 152, 0, 0.1)', color: 'var(--primary-color)' }} onClick={() => window.location.reload()}>
+                        <RefreshCw size={18} /> Đồng bộ mới
+                    </button>
+                    <button className="btn" style={{ border: 'none', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => supabase.auth.signOut()}>
+                        <LogOut size={18} /> Đăng xuất
+                    </button>
+                </div>
             </header>
 
             <div className="tabs">
