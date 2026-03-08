@@ -11,7 +11,7 @@ export const initialMenu = [
     name: 'Bánh Tráng Trộn',
     description: 'Bánh tráng, xoài, trứng cút, khô bò, sốt đặc biệt',
     price: 25000,
-    image: 'https://images.unsplash.com/photo-1626082895617-2c6b412bfd38?auto=format&fit=crop&q=80&w=400',
+    image: 'https://images.unsplash.com/photo-1512152272829-400f68a735c0?auto=format&fit=crop&q=80&w=400',
     category: 'an_vat',
     isBestseller: true,
     options: [
@@ -141,7 +141,7 @@ export const initialMenu = [
     name: 'Trà Đào Cam Sả',
     description: 'Trà đào thơm lừng, thanh mát',
     price: 35000,
-    image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&q=80&w=400',
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=400',
     category: 'nuoc_uong',
     isBestseller: true,
     options: []
@@ -160,7 +160,7 @@ export const initialMenu = [
     name: 'Khoai Tây Chiên Lắc Phô Mai',
     description: 'Khoai tây giòn rụm, bột phô mai béo ngậy',
     price: 30000,
-    image: 'https://images.unsplash.com/photo-1518013032307-302f85d6389a?auto=format&fit=crop&q=80&w=400',
+    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&q=80&w=400',
     category: 'an_vat',
     options: []
   },
@@ -232,7 +232,7 @@ export const initialMenu = [
     name: 'Mì Xào Bò Rau Cải',
     description: 'Mì xào mềm với thịt bò thăn và rau cải tươi',
     price: 50000,
-    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&q=80&w=400',
+    image: 'https://images.unsplash.com/photo-1555126634-f5826c1e59bc?auto=format&fit=crop&q=80&w=400',
     category: 'mi_tom',
     options: []
   },
@@ -349,7 +349,7 @@ export const initialMenu = [
     name: 'Trà Chanh Giã Tay',
     description: 'Chanh Quảng Đông thơm nồng đặc trưng',
     price: 25000,
-    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=400',
+    image: 'https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=400',
     category: 'nuoc_uong',
     options: []
   },
@@ -412,7 +412,7 @@ export const initialMenu = [
     name: 'Trà Vải Nhiệt Đới',
     description: 'Trà đen, vải thiều tươi, bạc hà',
     price: 35000,
-    image: 'https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=400',
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=400',
     category: 'nuoc_uong',
     options: []
   }
